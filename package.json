@@ -4,7 +4,7 @@
   "description": "Connecteur pour le fournisseur téléphonie PRIXTEL",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chulakseb/konnector-cozy-prixtel"
+    "url": "https://github.com/konnectors/prixtel"
   },
   "keywords": [],
   "author": "Cozy Cloud",

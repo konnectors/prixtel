@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "name": "Connector Prixtel",
+  "name": "Prixtel",
   "type": "konnector",
   "language": "node",
   "icon": "icon.svg",
   "slug": "prixtel",
-  "source": "https://github.com/chulakseb/konnector-cozy-prixtel",
-  "editor": "Cozy",
-  "vendor_link": "www.prixtel.com",
+  "source": "https://github.com/konnectors/prixtel",
+  "editor": "chulakseb",
+  "vendor_link": "https://www.prixtel.com/pws/SSO/authentication?callback=/client",
   "categories": ["telecom"],
   "fields": {
     "login": {
