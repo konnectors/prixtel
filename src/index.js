@@ -5,11 +5,9 @@ process.env.SENTRY_DSN =
 const {
   BaseKonnector,
   requestFactory,
-  scrape,
   saveBills,
   saveFiles,
-  log,
-  utils
+  log
 } = require('cozy-konnector-libs')
 
 // Librairies diverses
@@ -31,151 +29,94 @@ const requestHtml = requestFactory({
   }
 })
 
-// Instance pour la récupération de réponse JSON
-const requestJson = requestFactory({
-  debug: false,
-  cheerio: false,
-  json: true,
-  jar: j
-})
-
-// Instance pour la récupération des fichiers pdf
-const requestPdf = requestFactory({
-  debug: false,
-  cheerio: false,
-  json: false,
-  jar: j,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0',
-    Accept: 'application/pdf'
-  }
-})
-
-// Instance pour la récupération des Stream
-const requestStream = requestFactory({
-  debug: false,
-  cheerio: false,
-  json: false,
-  jar: j,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 Firefox/62.0',
-    Accept: 'application/octet-stream'
-  }
-})
+// Instance pour la récupération de réponse JSON et fichier PDF
+let requestJson
 
 // Variables pour l'initialisation d'utilitaires
 const replace = String.prototype.replace
-const qs = require('querystring')
 
 // Variables liees au site
 const VENDOR = 'PRIXTEL'
-const baseUrl = 'https://www.prixtel.com'
-const baseApiUrl = 'https://www.prixtel.com'
-
-const loginUrl = baseUrl + '/pws/SSO/authentication' // Pour login
-const creationfactureUrl = baseUrl + '/ws/EC_get_proc_modal' // Pour la création des factures détaillées
-const listedocumentUrl = baseUrl + '/pws/ec/get-customer-documents' // Pour récupérer la liste des documents contractuels
-const filedlUrl = baseUrl + '/ws/file' // Pour le téléchargement des factures détaillées + mandat
-const infoclientUrl = baseUrl + '/pws/ec/get-qualif-infos' // Pour récupérer les informations sur le client
-
-// Récupération liste facture
-const listefactureUrl = 'https://prixtel-v2.prixtel.com/api/bills' // Pour la liste des factures
-const facturedlUrl =
-  'https://external-pxl-aws-s3.prixtel.com/api/file/download/billingId/' // Pour la récupération des factures simples
-const facturedlDir = '/home/_services_/pxl_files/billing/' // Répertoire en paramètre des request
-const contratUrl =
-  'https://external-pxl-aws-s3.prixtel.com/api/file/download/file-type/customers_contract/extra/' // Pour le téléchargement des contrats
-
-// Jeton pour l'authentification du site 
-let xToken = null
+const baseUrl = 'https://espaceclient.prixtel.com'
+const loginUrl = baseUrl + '/api/login' // Pour login
+const infoclientUrl = baseUrl + '/api/customer' // Pour récupérer les informations sur le client
+const listefacturesUrl = baseUrl + '/api/bills' // Pour la liste des factures
+const fichierdlUrl = 'https://external-pxl-aws-s3.prixtel.com/api/file/download' // Pour le téléchargement de fichier
+const listelignesUrl = baseUrl + '/api/gsm/customer/msisdn/list' // Pour r{écupérer des lignes sur le compte
+const listedocumentsUrl = baseUrl + '/api/gsm/line' // Pour récupérer la liste des documents contractuels
 
 // Initialisation du connecteur
 module.exports = new BaseKonnector(start)
 
-// Récupération du jeton d'authentification
-async function extractToken() {
-  log('info', 'Récupération du Token dans les cookies')
-  let cookie = j.getCookies(baseUrl).find(cookie => cookie.key === 'prixtel_ec')
-
-  // On verifie que le cookie existe
-  if (!cookie) {
-    log('error', 'Erreur dans la récupération du jeton')
-    throw new Error(errors.VENDOR_DOWN)
-  }
-
-  // Decodage URI du cookie et remplacement des /
-  cookie = decodeURIComponent(cookie.value)
-  cookie = cookie
-    .replace(/\\/gi, '')
-    .replace(/"{/gi, '{')
-    .replace(/}"/gi, '}')
-
-  // On converti le cookie en JSON
-  cookie = JSON.parse(cookie)
-
-  xToken = cookie.session
-}
-
 // Fonction principal du connecteur
 async function start(fields, cozyParameters) {
+  // Initialisation des requests avec le token authorisation en paramètre
+  init_request('')
+
   // Authentification
   log('info', 'Authentification ...')
   await authenticate.bind(this)(fields.login, fields.password)
   log('info', 'Correctement authentifié')
 
-  // Extraction du jeton d'authentification
-  await extractToken()
-
   // Récupération des informations sur le client
-  let infos_client = await requestJson({
-    uri:
-      `${infoclientUrl}/?` +
-      qs.encode({
-        token: xToken,
-        data: '{"path":"ligne-mobile"}'
-      })
-  })
-
-  // Suppression de l'arborescence du JSON
-  infos_client = infos_client.model
+  // let infos_client = await requestJson(`${infoclientUrl}`)
 
   // Récupération des factures simples et détaillées
-  await getFactures(fields, infos_client.cid)
+  await getFactures(fields)
 
   // Récupération des documents contractuels
-  await getDocuments(fields, infos_client.cid)
+  await getDocuments(fields)
+}
+
+// Fonction permettant d'initialiser les requests avec le token Authorization
+function init_request(token) {
+  requestJson = requestFactory({
+    debug: false,
+    cheerio: false,
+    json: true,
+    jar: j,
+    headers: {
+      Authorization: `Bearer ` + token,
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+      Accept: '*/*'
+    }
+  })
 }
 
 // Fonction d'authentification au site
 function authenticate(username, password) {
-  return this.signin({
-    requestInstance: requestHtml,
-    url: `${loginUrl}`,
-    formSelector: '#wpx_loginForm',
-    formData: { email: username, pwd: password },
+  // Authentification et récupération du token
+  return requestHtml(`${baseUrl}`)
+    .then($ => {
+      return requestJson({
+        uri: `${loginUrl}`,
+        method: 'POST',
+        json: {
+          email: username,
+          password: password,
+          group: 'ec'
+        },
+        transform: (body, response) => [response.statusCode, body]
+      })
+    })
+    .then(([statusCode, body]) => {
+      if (statusCode === 200) {
+        // On réinitialise les requests avec le token
+        init_request(body.token)
 
-    validate: (statusCode, $, fullResponse) => {
-      if ($('.connected_user_name').length === 1) {
-        return true
+        return body
       } else {
-        log('error', $('div .wpx_errors li').text())
-        return false
+        throw new Error(errors.LOGIN_FAILED)
       }
-    }
-  })
+    })
 }
 
 // Import des Factures
-async function getFactures(fields, id_client) {
+async function getFactures(fields) {
   // Récupération de la liste des factures
-  const liste_factures = await requestJson({
-    uri: `${listefactureUrl}`,
-    headers: {
-      'X-Auth': xToken
-    }
-  })
+  log('info', 'Récupération de la liste des factures liées au compte')
+  const liste_factures = await requestJson(`${listefacturesUrl}`)
 
   // Conversion du JSON pour les factures simples
   log('info', 'Mise en forme des factures')
@@ -192,13 +133,16 @@ async function getFactures(fields, id_client) {
       facture.id,
       false
     ),
-    fileurl:
-      `${facturedlUrl}` +
-      facture.id +
-      '?' +
-      qs.encode({
-        token: xToken
-      }),
+    fetchFile: async function(d) {
+      log('info', 'Récupération facture détaillée : ' + d.vendorRef)
+      return requestJson({
+        uri: `${fichierdlUrl}`,
+        method: 'POST',
+        json: {
+          billingId: d.vendorRef
+        }
+      }).pipe(new PassThrough())
+    },
     metadata: {
       importDate: new Date(),
       version: 1
@@ -210,191 +154,100 @@ async function getFactures(fields, id_client) {
   await saveBills(factures, fields, {
     subPath: '',
     identifiers: ['prixtel'],
-    requestInstance: requestPdf,
-    contentType: 'application/pdf',
+    fileIdAttributes: ['vendorRef'],
     sourceAccount: fields.login,
     sourceAccountIdentifier: fields.login,
-    fileIdAttributes: ['filename']
-  })
-
-  // Conversion du JSON pour les factures détaillées
-  log('info', 'Mise en forme des factures détaillées')
-  let factures_detaillees = liste_factures.map(facture => ({
-    vendor: VENDOR,
-    date: parseDate(facture.date),
-    amount: new Number(facture.totalTtc),
-    currency: 'EUR',
-    vendorRef: facture.id,
-    filename: formaliseNomfacture(
-      facture.date,
-      facture.totalTtc,
-      facture.period,
-      facture.id,
-      true
-    ),
-    fileurl:
-      `${filedlUrl}/?` +
-      qs.encode({
-        token: xToken,
-        file:
-          facturedlDir +
-          facture.month +
-          '/' +
-          facture.id +
-          '-' +
-          facture.customer.id +
-          '-detail.pdf',
-        display: facture.id + '-' + facture.customer.id + '-detail.pdf',
-        csv: 'n'
-      }),
-
-    creationurl:
-      `${creationfactureUrl}?` +
-      qs.encode({
-        token: xToken,
-        procId: '218',
-        missionId: '',
-        oid: 'fact__' + facture.id,
-        month: facture.month,
-        user_ext: '',
-        home: '06E'
-      }),
-
-    fetchFile: async function(d) {
-      log('info', 'Récupération facture détaillée : ' + d.vendorRef)
-
-      await requestJson({
-        uri: d.creationurl
-      })
-
-      return requestPdf({
-        uri: d.fileurl
-      }).pipe(new PassThrough())
-    }
-  }))
-
-  // Import des factures dans COZY
-  log('info', 'Sauvegarde des factures détaillées dans Cozy')
-  await saveFiles(factures_detaillees, fields, {
-    identifiers: ['prixtel'],
-    contentType: 'application/pdf',
-    sourceAccount: fields.login,
-    sourceAccountIdentifier: fields.login,
-    fileIdAttributes: ['filename']
+    contentType: true
   })
 }
 
 // Import des documents
-async function getDocuments(fields, id_client) {
-  // Récupération de la liste des documents
-  log('info', 'Récupération de liste des documents')
-  let liste_documents = await requestJson({
-    uri:
-      `${listedocumentUrl}?` +
-      qs.encode({
-        token: xToken,
-        data: '{}'
-      })
-  })
+async function getDocuments(fields) {
+  // Récupération de la liste des lignes liées au compte
+  log('info', 'Récupération de la liste des lignes liées au compte')
+  let liste_lignes = await requestJson(`${listelignesUrl}`)
 
-  // On récupère que les données utiles
-  liste_documents = liste_documents.model
-
-  // Tableau contenant la liste des documents à sauvegarder dans COZY
-  log('info', 'Mise en forme des documents contractuels')
+  // Récupération de la liste des documents pour chaque ligne et mise en forme
   const documents = []
 
-  // Ajout du mandat
-  if (liste_documents.mandat_file) {
-    documents.push({
-      fileurl:
-        `${filedlUrl}/?` +
-        qs.encode({
-          token: xToken,
-          file: liste_documents.mandat_path + liste_documents.mandat_file,
-          display: liste_documents.mandat_file,
-          csv: 'n'
-        }),
-      filename: formaliseNomDocument('MANDAT', '')
-    })
-  }
+  // Récupération des CGV , Guide tarifaire, ...
+  for (const ligne of liste_lignes) {
+    log(
+      'info',
+      'Récupértation et mise en forme des documents contractuels de la ligne : ' +
+        ligne.phoneNumber
+    )
+    let liste_documents = await requestJson(
+      `${listedocumentsUrl}/` + ligne.phoneNumber
+    )
 
-  // Préparation des documents contractuels
-  for (const doc of liste_documents.gsms) {
-    if (doc.line_id) {
-      // Conditions générales de vente
-      if (doc.cgv) {
-        documents.push({
-          fileurl: doc.cgv,
-          filename: formaliseNomDocument('CGV', doc.line_id)
-        })
-      }
-
-      // Guide tarifaire
-      if (doc.offer_gt) {
-        documents.push({
-          fileurl: doc.offer_gt,
-          filename: formaliseNomDocument('OFFER_GT', doc.line_id)
-        })
-      }
-
-      // Guide tarifaire internationnal
-      if (doc.offer_gt_intl) {
-        documents.push({
-          fileurl: doc.offer_gt_intl,
-          filename: formaliseNomDocument('OFFER_GT_INTL', doc.line_id)
-        })
-      }
-
-      // Fiche standardisee
-      if (doc.offer_link) {
-        documents.push({
-          fileurl: doc.offer_link,
-          filename: formaliseNomDocument('OFFER_LINK', doc.line_id)
-        })
-      }
+    // Conditions générales de vente
+    if (liste_documents.cgv) {
+      documents.push({
+        fileurl: liste_documents.cgv,
+        filename: formaliseNomDocument('CGV', liste_documents.phoneNumber)
+      })
     }
+
+    // Guide tarifaire
+    if (liste_documents.offer.offerGt) {
+      documents.push({
+        fileurl: liste_documents.offer.offerGt,
+        filename: formaliseNomDocument('OFFER_GT', liste_documents.phoneNumber)
+      })
+    }
+
+    // Guide tarifaire internationnal
+    if (liste_documents.offer.offerGtIntl) {
+      documents.push({
+        fileurl: liste_documents.offer.offerGtIntl,
+        filename: formaliseNomDocument(
+          'OFFER_GT_INTL',
+          liste_documents.phoneNumber
+        )
+      })
+    }
+
+    // Fiche standardisee
+    if (liste_documents.offer.offerLink) {
+      documents.push({
+        fileurl: liste_documents.offer.offerLink,
+        filename: formaliseNomDocument(
+          'OFFER_LINK',
+          liste_documents.phoneNumber
+        )
+      })
+    }
+
+    // Contrat
+    documents.push({
+      filename: formaliseNomDocument('CONTRAT', liste_documents.phoneNumber),
+      fetchFile: async function(d) {
+        log('info', 'Récupération du contrat : ' + liste_documents.phoneNumber)
+        return requestJson({
+          uri: `${fichierdlUrl}`,
+          method: 'POST',
+          json: {
+            extra: liste_documents.phoneNumber,
+            fileTypeSlug: 'customers_contract'
+          }
+        }).pipe(new PassThrough())
+      },
+      metadata: {
+        importDate: new Date(),
+        version: 1
+      }
+    })
   }
 
   // Téléchargement des fichiers
   log('info', 'Sauvegarde des documents contractuels dans Cozy')
   await saveFiles(documents, fields, {
-    requestInstance: requestPdf,
-    fileIdAttributes: ['filename'],
-    sourceAccount: fields.login,
-    sourceAccountIdentifier: fields.login
-  })
-
-  // Préparation de la téléchargement des contrats
-  log('info', 'Mise en forme des contrats')
-  const contrats = []
-
-  // Ajout des documents pour toutes les lignes
-  for (const doc of liste_documents.gsms) {
-    if (doc.line_id) {
-      // Contrat lie a la ligne
-      contrats.push({
-        filestream: await requestStream(
-          `${contratUrl}` +
-            doc.line_id +
-            `?` +
-            qs.encode({
-              token: xToken
-            })
-        ).pipe(new PassThrough()),
-        filename: formaliseNomDocument('CONTRAT', doc.line_id)
-      })
-    }
-  }
-
-  // Sauvegarde des contrats dans COZY
-  log('info', 'Sauvegarde des contrats dans Cozy')
-  await saveFiles(contrats, fields, {
+    identifiers: ['prixtel'],
     fileIdAttributes: ['filename'],
     sourceAccount: fields.login,
     sourceAccountIdentifier: fields.login,
-    identifiers: ['prixtel'],
-    contentType: 'application/pdf'
+    contentType: true
   })
 }
 
@@ -445,6 +298,7 @@ function formaliseNomfacture(dDate, mMontant, sPeriode, sReference, bDetail) {
 
 // Formalise le nom des documents
 function formaliseNomDocument(type, num_ligne) {
+  let nom
   if (type == 'CGV') nom = 'CGV'
   else if (type == 'OFFER_GT') nom = 'Guide_Tarifaire'
   else if (type == 'OFFER_GT_INTL') nom = 'Guide_Tarifaire_International'
