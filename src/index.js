@@ -32,14 +32,11 @@ const requestHtml = requestFactory({
 // Instance pour la récupération de réponse JSON et fichier PDF
 let requestJson
 
-// Variables pour l'initialisation d'utilitaires
-const replace = String.prototype.replace
-
 // Variables liees au site
 const VENDOR = 'PRIXTEL'
 const baseUrl = 'https://espaceclient.prixtel.com'
 const loginUrl = baseUrl + '/api/login' // Pour login
-const infoclientUrl = baseUrl + '/api/customer' // Pour récupérer les informations sur le client
+// const infoclientUrl = baseUrl + '/api/customer' // Pour récupérer les informations sur le client
 const listefacturesUrl = baseUrl + '/api/bills' // Pour la liste des factures
 const fichierdlUrl = 'https://external-pxl-aws-s3.prixtel.com/api/file/download' // Pour le téléchargement de fichier
 const listelignesUrl = baseUrl + '/api/gsm/customer/msisdn/list' // Pour r{écupérer des lignes sur le compte
@@ -49,7 +46,7 @@ const listedocumentsUrl = baseUrl + '/api/gsm/line' // Pour récupérer la liste
 module.exports = new BaseKonnector(start)
 
 // Fonction principal du connecteur
-async function start(fields, cozyParameters) {
+async function start(fields) {
   // Initialisation des requests avec le token authorisation en paramètre
   init_request('')
 
@@ -88,7 +85,7 @@ function init_request(token) {
 function authenticate(username, password) {
   // Authentification et récupération du token
   return requestHtml(`${baseUrl}`)
-    .then($ => {
+    .then(() => {
       return requestJson({
         uri: `${loginUrl}`,
         method: 'POST',
@@ -222,7 +219,7 @@ async function getDocuments(fields) {
     // Contrat
     documents.push({
       filename: formaliseNomDocument('CONTRAT', liste_documents.phoneNumber),
-      fetchFile: async function(d) {
+      fetchFile: async function() {
         log('info', 'Récupération du contrat : ' + liste_documents.phoneNumber)
         return requestJson({
           uri: `${fichierdlUrl}`,
