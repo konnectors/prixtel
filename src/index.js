@@ -7,7 +7,8 @@ const {
   requestFactory,
   saveBills,
   saveFiles,
-  log
+  log,
+  errors
 } = require('cozy-konnector-libs')
 
 // Librairies diverses
@@ -97,6 +98,13 @@ function authenticate(username, password) {
         transform: (body, response) => [response.statusCode, body]
       })
     })
+    .catch(err => {
+      if (err.statusCode == 403) {
+        throw new Error(errors.LOGIN_FAILED)
+      } else {
+        throw err
+      }
+    })
     .then(([statusCode, body]) => {
       if (statusCode === 200) {
         // On réinitialise les requests avec le token
@@ -104,7 +112,7 @@ function authenticate(username, password) {
 
         return body
       } else {
-        throw new Error(errors.LOGIN_FAILED)
+        throw new Error(errors.VENDOR_DOWN)
       }
     })
 }
