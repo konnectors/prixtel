@@ -53,7 +53,9 @@ async function start(fields) {
 
   // Authentification
   log('info', 'Authentification ...')
+  await this.deactivateAutoSuccessfulLogin()
   await authenticate.bind(this)(fields.login, fields.password)
+  await this.notifySuccessfulLogin()
   log('info', 'Correctement authentifié')
 
   // Récupération des informations sur le client
