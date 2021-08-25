@@ -145,6 +145,16 @@ async function getFactures(fields) {
       facture.id,
       false
     ),
+    fileAttributes: {
+      metadata: {
+        importDate: new Date(),
+        contentAuthor: 'prixtel',
+        version: 1,
+        isSubscription: true,
+        carbonCopy: true,
+        qualification: Qualification.getByLabel('phone_invoice')
+      }
+    },
     fetchFile: async function(d) {
       log('info', 'Récupération facture détaillée : ' + d.vendorRef)
       return requestJson({
@@ -165,17 +175,7 @@ async function getFactures(fields) {
     fileIdAttributes: ['vendorRef'],
     sourceAccount: fields.login,
     sourceAccountIdentifier: fields.login,
-    contentType: true,
-    fileAttributes: {
-      metadata: {
-        importDate: new Date(),
-        contentAuthor: 'prixtel',
-        version: 1,
-        isSubscription: true,
-        carbonCopy: true,
-        qualification: Qualification.getByLabel('phone_invoice')
-      }
-    }
+    contentType: true
   })
 }
 
@@ -251,9 +251,12 @@ async function getDocuments(fields) {
           }
         }).pipe(new PassThrough())
       },
-      metadata: {
-        importDate: new Date(),
-        version: 1
+      fileAttributes: {
+          metadata: {
+            importDate: new Date(),
+            version: 1,
+            carbonCopy: true
+        }
       }
     })
   }
