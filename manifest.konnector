@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "name": "Prixtel",
+  "type": "konnector",
+  "language": "node",
+  "icon": "icon.svg",
+  "slug": "prixtel",
+  "source": "https://github.com/konnectors/prixtel",
+  "editor": "chulakseb",
+  "vendor_link": "https://www.prixtel.com/pws/SSO/authentication?callback=/client",
+  "categories": ["telecom"],
+  "fields": {
+    "login": {
+      "type": "email"
+    },
+    "password": {
+      "type": "password"
+    }
+  },
+  "folders": [{"defaultDir": "$administrative/$konnector/$account"}],
+  "data_types": [
+    "bill"
+  ],
+  "screenshots": [],
+  "permissions": {
+    "bank operations": {
+      "type": "io.cozy.bank.operations"
+    },
+    "bills": {
+      "type": "io.cozy.bills"
+    },
+    "files": {
+      "type": "io.cozy.files"
+    },
+    "accounts": {
+      "type": "io.cozy.accounts"
+    },
+    "carboncopy": {
+      "type": "io.cozy.certified.carbon_copy"
+    }
+  },
+  "developer": {
+    "name": "Sebastien Flourette"
+  },
+  "langs": ["fr", "en"],
+  "locales": {
+    "fr": {
+      "short_description": "Récupère les documents et factures",
+      "long_description": "Récupère les documents et factures de téléphone Prixtel",
+      "permissions": {
+        "bank operations": {
+          "description": "Utilisé pour relier les factures à des operations bancaires"
+        },
+        "bills": {
+          "description": "Utilisé pour sauver les données des factures"
+        },
+        "files": {
+          "description": "Utilisé pour sauvegarder les factures"
+        },
+        "accounts": {
+          "description": "Utilisé pour obtenir les données du compte"
+        },
+        "carboncopy": {
+          "description": "Utilisé pour certifier que vos fichiers sont copie conforme avec les documents d'origine"
+        }
+      }
+    },
+    "en": {
+      "short_description": "Fetch docs and bills",
+      "long_description": "Fetch docs and bills from Pxitel",
+      "permissions": {
+        "bank operations": {
+          "description": "Required to link bank operations to bills"
+        },
+        "bills": {
+          "description": "Required to save the bills data"
+        },
+        "files": {
+          "description": "Required to save the bills"
+        },
+        "accounts": {
+          "description": "Required to get the account's data"
+        },
+        "carboncopy": {
+          "description": "Required for carbon copy documents"
+        }
+      }
+    }
+  },
+  "banksTransactionRegExp": "\\bprixtel\\b",
+  "features": [
+    "LOGIN_OK",
+    "METADATA_DEDUP",
+    "BILLS",
+    "CARBON_COPY",
+    "DOC_QUALIFICATION_V2"
+  ],
+  "manifest_version": "2"
+}
