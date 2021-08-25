@@ -1203,36 +1203,7 @@ cozy-konnector-build@1.2.2:
     webpack "5.38.1"
     webpack-cli "4.7.0"
 
-cozy-konnector-libs@4.42.1:
-  version "4.42.1"
-  resolved "https://registry.npmjs.org/cozy-konnector-libs/-/cozy-konnector-libs-4.42.1.tgz"
-  integrity sha512-T6bHP0W9Apy7P2yxaFQOsQDiaSYFHrmaapj+4PIoiMUVJxuvRIBfcOu3ddUFK0GMRYYdohBCZNvD3dXj656Stw==
-  dependencies:
-    babel-runtime "^6.26.0"
-    bluebird "^3.7.2"
-    bluebird-retry "^0.11.0"
-    btoa "1.2.1"
-    cheerio "^1.0.0-rc.9"
-    classificator "^0.3.3"
-    cozy-client "^23.4.0"
-    cozy-client-js "^0.19.0"
-    cozy-doctypes "^1.82.2"
-    cozy-logger "^1.7.0"
-    date-fns "^2.22.1"
-    file-type "^16.5.0"
-    geco "^0.11.1"
-    lodash-id "^0.14.0"
-    lowdb "^1.0.0"
-    mime-types "^2.1.31"
-    node-fetch "^2.6.1"
-    raven "^2.6.4"
-    raw-body "^2.4.1"
-    request "^2.88.2"
-    request-debug "^0.2.0"
-    request-promise "^4.2.6"
-    strip-json-comments "^3.1.1"
-
-cozy-konnector-libs@^4.42.2:
+cozy-konnector-libs@4.42.2, cozy-konnector-libs@^4.42.2:
   version "4.42.2"
   resolved "https://registry.npmjs.org/cozy-konnector-libs/-/cozy-konnector-libs-4.42.2.tgz"
   integrity sha512-1QXTfxS1aQribnaGj73vNOG6JTP64gQJ/4cc63kpbJuY3WqM7LEWfacWrzRU6rHsJmlhSFMMg7WW1f3/jP58fg==
@@ -1393,9 +1364,9 @@ date-fns@^1.30.1:
   integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
 
 date-fns@^2.22.1:
-  version "2.23.0"
-  resolved "https://registry.npmjs.org/date-fns/-/date-fns-2.23.0.tgz"
-  integrity sha512-5ycpauovVyAk0kXNZz6ZoB9AYMZB4DObse7P3BPWmyEjXNORTI8EJ6X0uaSAq4sCHzM1uajzrkr6HnsLQpxGXA==
+  version "2.22.1"
+  resolved "https://registry.npmjs.org/date-fns/-/date-fns-2.22.1.tgz"
+  integrity sha512-yUFPQjrxEmIsMqlHhAhmxkuH769baF21Kk+nZwZGyrMoyLA+LugaQtC0+Tqf9CBUUULWwUJt6Q5ySI3LJDDCGg==
 
 debug@2.6.9:
   version "2.6.9"
