@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "Prixtel",
   "type": "konnector",
   "language": "node",
@@ -8,7 +8,9 @@
   "source": "https://github.com/konnectors/prixtel",
   "editor": "chulakseb",
   "vendor_link": "https://www.prixtel.com/pws/SSO/authentication?callback=/client",
-  "categories": ["telecom"],
+  "categories": [
+    "telecom"
+  ],
   "fields": {
     "login": {
       "type": "email"
@@ -17,7 +19,11 @@
       "type": "password"
     }
   },
-  "folders": [{"defaultDir": "$administrative/$konnector/$account"}],
+  "folders": [
+    {
+      "defaultDir": "$administrative/$konnector/$account"
+    }
+  ],
   "data_types": [
     "bill"
   ],
@@ -42,7 +48,10 @@
   "developer": {
     "name": "Sebastien Flourette"
   },
-  "langs": ["fr", "en"],
+  "langs": [
+    "fr",
+    "en"
+  ],
   "locales": {
     "fr": {
       "short_description": "Récupère les documents et factures",
