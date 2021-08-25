@@ -1,6 +1,6 @@
 {
   "name": "cozy-konnector-prixtel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Connecteur pour le fournisseur téléphonie PRIXTEL",
   "repository": {
     "type": "git",
@@ -39,10 +39,9 @@
   "dependencies": {
     "moment": "2.29.1",
     "cozy-konnector-libs": "4.42.1"
-
   },
   "devDependencies": {
-    "cozy-jobs-cli": "1.16.1",
-    "cozy-konnector-build": "1.2.1"
+    "cozy-jobs-cli": "1.16.2",
+    "cozy-konnector-build": "1.2.2"
   }
 }
