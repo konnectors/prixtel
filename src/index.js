@@ -8,7 +8,8 @@ const {
   saveBills,
   saveFiles,
   log,
-  errors
+  errors,
+  cozyClient
 } = require('cozy-konnector-libs')
 
 // Librairies diverses
@@ -29,6 +30,10 @@ const requestHtml = requestFactory({
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'
   }
 })
+
+// Importing models to get qualification by label
+const models = cozyClient.new.models
+const { Qualification } = models.document
 
 // Instance pour la récupération de réponse JSON et fichier PDF
 let requestJson
@@ -149,10 +154,6 @@ async function getFactures(fields) {
           billingId: d.vendorRef
         }
       }).pipe(new PassThrough())
-    },
-    metadata: {
-      importDate: new Date(),
-      version: 1
     }
   }))
 
@@ -164,7 +165,17 @@ async function getFactures(fields) {
     fileIdAttributes: ['vendorRef'],
     sourceAccount: fields.login,
     sourceAccountIdentifier: fields.login,
-    contentType: true
+    contentType: true,
+    fileAttributes: {
+      metadata: {
+        importDate: new Date(),
+        contentAuthor: 'prixtel',
+        version: 1,
+        isSubscription: true,
+        carbonCopy: true,
+        qualification: Qualification.getByLabel('phone_invoice')
+      }
+    }
   })
 }
 

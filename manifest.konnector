@@ -34,6 +34,9 @@
     },
     "accounts": {
       "type": "io.cozy.accounts"
+    },
+    "carboncopy": {
+      "type": "io.cozy.certified.carbon_copy"
     }
   },
   "developer": {
@@ -56,6 +59,9 @@
         },
         "accounts": {
           "description": "Utilisé pour obtenir les données du compte"
+        },
+        "carboncopy": {
+          "description": "Utilisé pour certifier que vos fichiers sont copie conforme avec les documents d'origine"
         }
       }
     },
@@ -74,10 +80,20 @@
         },
         "accounts": {
           "description": "Required to get the account's data"
+        },
+        "carboncopy": {
+          "description": "Required for carbon copy documents"
         }
       }
     }
   },
   "banksTransactionRegExp": "\\bprixtel\\b",
+  "features": [
+    "LOGIN_OK",
+    "METADATA_DEDUP",
+    "BILLS",
+    "CARBON_COPY",
+    "DOC_QUALIFICATION_V2"
+  ],
   "manifest_version": "2"
 }
