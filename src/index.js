@@ -203,7 +203,14 @@ async function getDocuments(fields) {
     if (liste_documents.cgv) {
       documents.push({
         fileurl: liste_documents.cgv,
-        filename: formaliseNomDocument('CGV', liste_documents.phoneNumber)
+        filename: formaliseNomDocument('CGV', liste_documents.phoneNumber),
+        fileAttributes: {
+          metadata: {
+            importDate: new Date(),
+            version: 1,
+            carbonCopy: true
+          }
+        }
       })
     }
 
@@ -211,7 +218,14 @@ async function getDocuments(fields) {
     if (liste_documents.offer.offerGt) {
       documents.push({
         fileurl: liste_documents.offer.offerGt,
-        filename: formaliseNomDocument('OFFER_GT', liste_documents.phoneNumber)
+        filename: formaliseNomDocument('OFFER_GT', liste_documents.phoneNumber),
+        fileAttributes: {
+          metadata: {
+            importDate: new Date(),
+            version: 1,
+            carbonCopy: true
+          }
+        }
       })
     }
 
@@ -222,7 +236,14 @@ async function getDocuments(fields) {
         filename: formaliseNomDocument(
           'OFFER_GT_INTL',
           liste_documents.phoneNumber
-        )
+        ),
+        fileAttributes: {
+          metadata: {
+            importDate: new Date(),
+            version: 1,
+            carbonCopy: true
+          }
+        }
       })
     }
 
@@ -233,7 +254,14 @@ async function getDocuments(fields) {
         filename: formaliseNomDocument(
           'OFFER_LINK',
           liste_documents.phoneNumber
-        )
+        ),
+        fileAttributes: {
+          metadata: {
+            importDate: new Date(),
+            version: 1,
+            carbonCopy: true
+          }
+        }
       })
     }
 
@@ -252,10 +280,10 @@ async function getDocuments(fields) {
         }).pipe(new PassThrough())
       },
       fileAttributes: {
-          metadata: {
-            importDate: new Date(),
-            version: 1,
-            carbonCopy: true
+        metadata: {
+          importDate: new Date(),
+          version: 1,
+          carbonCopy: true
         }
       }
     })
