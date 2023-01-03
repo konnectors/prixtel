@@ -9,7 +9,8 @@ const {
   saveFiles,
   log,
   errors,
-  cozyClient
+  cozyClient,
+  solveCaptcha
 } = require('cozy-konnector-libs')
 
 // Librairies diverses
@@ -47,6 +48,7 @@ const listefacturesUrl = baseUrl + '/api/bills' // Pour la liste des factures
 const fichierdlUrl = 'https://external-pxl-aws-s3.prixtel.com/api/file/download' // Pour le téléchargement de fichier
 const listelignesUrl = baseUrl + '/api/gsm/customer/msisdn/list' // Pour r{écupérer des lignes sur le compte
 const listedocumentsUrl = baseUrl + '/api/gsm/line' // Pour récupérer la liste des documents contractuels
+const captchaKey = '6LdS0MkjAAAAADsjdsGhlqMCLCLtI7qVOa6O5fo8'
 
 // Initialisation du connecteur
 module.exports = new BaseKonnector(start)
@@ -90,7 +92,11 @@ function init_request(token) {
 }
 
 // Fonction d'authentification au site
-function authenticate(username, password) {
+async function authenticate(username, password) {
+  const captchaToken = await solveCaptcha({
+    websiteKey: captchaKey,
+    websiteURL: baseUrl
+  })
   // Authentification et récupération du token
   return requestHtml(`${baseUrl}`)
     .then(() => {
@@ -98,6 +104,8 @@ function authenticate(username, password) {
         uri: `${loginUrl}`,
         method: 'POST',
         json: {
+          captchaKey,
+          captchaToken,
           email: username,
           password: password,
           group: 'ec'
@@ -155,7 +163,7 @@ async function getFactures(fields) {
         qualification: Qualification.getByLabel('phone_invoice')
       }
     },
-    fetchFile: async function(d) {
+    fetchFile: async function (d) {
       log('info', 'Récupération facture détaillée : ' + d.vendorRef)
       return requestJson({
         uri: `${fichierdlUrl}`,
@@ -268,7 +276,7 @@ async function getDocuments(fields) {
     // Contrat
     documents.push({
       filename: formaliseNomDocument('CONTRAT', liste_documents.phoneNumber),
-      fetchFile: async function() {
+      fetchFile: async function () {
         log('info', 'Récupération du contrat : ' + liste_documents.phoneNumber)
         return requestJson({
           uri: `${fichierdlUrl}`,
