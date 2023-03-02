@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.1.1",
   "name": "Prixtel",
   "type": "konnector",
   "language": "node",
@@ -97,6 +97,9 @@
     }
   },
   "banksTransactionRegExp": "\\bprixtel\\b",
+  "qualification_labels": [
+    "telecom_invoice"
+  ],
   "features": [
     "LOGIN_OK",
     "METADATA_DEDUP",
