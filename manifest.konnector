@@ -9,7 +9,7 @@
   "editor": "chulakseb",
   "vendor_link": "https://www.prixtel.com/pws/SSO/authentication?callback=/client",
   "categories": [
-    "telecom"
+    "isp"
   ],
   "fields": {
     "login": {
